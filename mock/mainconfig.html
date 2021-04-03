@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>input, select {
+        margin: 1px
+    }</style>
+</head>
+<body>
+    <a href="/sec">Back</a> | 
+    <a href="/sec/?cf=2">Megad-ID</a> | 
+    <a href="/sec/?cf=7">Cron</a> | 
+    <a href="/sec/?cf=9">Program</a>
+    
+    <br>
+
+    <form action="/sec/">
+        <input type="hidden" name="cf" value="1">
+        IP: <input name="eip" value="192.168.88.14">
+        
+        <br>
+        Pwd: <input name="pwd" maxlength="3" value="sec">
+        
+        <br>
+        GW: <input name="gw" value="255.255.255.255">
+        
+        <br>
+        SRV: <input name="sip" value="255.255.255.255:1883">
+        
+        <br>
+        SRV Type: 
+        <select name="srvt">
+            <option value="0" selected="">HTTP</option>
+            <option value="1">MQTT</option>
+        </select> 
+        
+        <br>
+        Script: <input name="sct" maxlength="15" value="test value">
+        
+        <br>
+        Wdog: <input name="pr" size="3" value="tst">
+        
+        <br>
+        UART:
+        <select name="gsm">
+            <option value="0">Disabled</option>
+            <option value="1" selected="">GSM</option>
+            <option value="2">RS485</option>
+        </select>
+        
+        <br>
+        Uptime: 0d 18:51
+        <br>
+        <input type="submit" value="Save">
+    </form>
+</body>
+</html>

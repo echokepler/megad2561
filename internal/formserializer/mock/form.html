@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Form Mock</title>
+    </head>
+    <body>
+        <form action="">
+            <label for="first_select"></label>
+            <select name="first_select" multiple id="first_select">
+                <option selected value="first">First</option>
+                <option value="second">Second</option>
+                <option selected value="third">Third</option>
+            </select>
+
+            <label for="second_select"></label>
+            <select name="second_select" id="second_select">
+                <option value="first">First</option>
+                <option selected value="second">Second</option>
+                <option value="third">Third</option>
+            </select>
+
+            <label>
+                <input type="hidden" name="hidden_input" value="hidden_value">
+            </label>
+
+            <label>
+                <input hidden name="without_type" value="value">
+            </label>
+
+            <label>
+                <input type="text" name="base_input" value="value">
+            </label>
+
+            <label for="checked"><input type="checkbox" name="checked" checked id="checked"></label>
+            <label for="not_checked"><input type="checkbox" name="not_checked" id="not_checked"></label>
+        </form>
+    </body>
+</html>

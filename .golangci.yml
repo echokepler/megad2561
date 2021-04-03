@@ -1,0 +1,29 @@
+run:
+  allow-parallel-runners: true
+  tests: false
+  skip-dirs:
+    - bin
+issues:
+  fix: true
+
+output:
+  format: colored-line-number
+  print-linter-name: true
+  print-issued-lines: true
+
+
+linters:
+  disable-all: true
+  enable:
+    - golint
+    - govet
+    - staticcheck
+    - errcheck
+    - deadcode
+    - gosimple
+    - ineffassign
+    - structcheck
+    - varcheck
+    - dupl
+    - gochecknoglobals
+    - gomnd
