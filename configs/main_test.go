@@ -1,6 +1,7 @@
-package megad2561
+package configs
 
 import (
+	"github.com/echokepler/megad2561/adapter"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"io/ioutil"
@@ -21,7 +22,7 @@ func TestMainConfig_Sync(t *testing.T) {
 		var server *httptest.Server
 		var config MainConfig
 
-		file, err := ioutil.ReadFile("./mock/mainconfig.html")
+		file, err := ioutil.ReadFile("./__mocks__/mainconfig.html")
 		if err != nil {
 			panic("Cant read mainconfig.html")
 		}
@@ -32,7 +33,7 @@ func TestMainConfig_Sync(t *testing.T) {
 				panic("Cant respond html mainconfig")
 			}
 		}))
-		service := HTTPAdapter{Host: server.URL}
+		service := adapter.HTTPAdapter{Host: server.URL}
 
 		err = config.Read(&service)
 		if err != nil {
@@ -111,7 +112,7 @@ func TestMainConfig_Apply(t *testing.T) {
 				assert.Equal(t, tc.expected, r.URL.String())
 			}))
 
-			service := HTTPAdapter{Host: server.URL}
+			service := adapter.HTTPAdapter{Host: server.URL}
 
 			tc.cb(&config)
 

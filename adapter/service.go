@@ -1,8 +1,9 @@
-package megad2561
+package adapter
 
 import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/echokepler/megad2561/core"
 	"github.com/echokepler/megad2561/internal/formserializer"
 	"net/http"
 	"net/url"
@@ -16,8 +17,8 @@ type HTTPAdapter struct {
 /**
 * Get - запрашивает данные
 **/
-func (adapter *HTTPAdapter) Get(params ServiceValues) (ServiceValues, error) {
-	values := ServiceValues{}
+func (adapter *HTTPAdapter) Get(params core.ServiceValues) (core.ServiceValues, error) {
+	values := core.ServiceValues{}
 
 	queries := adapter.convertToQueries(params)
 	uri := adapter.makeURL(queries)
@@ -32,9 +33,7 @@ func (adapter *HTTPAdapter) Get(params ServiceValues) (ServiceValues, error) {
 		return nil, err
 	}
 
-	form := doc.Find("form")
-
-	fs := formserializer.Serialize(form)
+	fs := formserializer.SerializeForms(doc)
 
 	for _, checkbox := range fs.Checkboxes {
 		values.Add(checkbox.Name, strconv.FormatBool(checkbox.Value))
@@ -56,7 +55,7 @@ func (adapter *HTTPAdapter) Get(params ServiceValues) (ServiceValues, error) {
 /**
 * Post - отправляет значения в сервис
 **/
-func (adapter *HTTPAdapter) Post(values ServiceValues) error {
+func (adapter *HTTPAdapter) Post(values core.ServiceValues) error {
 	formattedValues, err := adapter.formatValues(values)
 	if err != nil {
 		return err
@@ -82,7 +81,7 @@ func (adapter *HTTPAdapter) Post(values ServiceValues) error {
 /**
 * convertToQueries преобразует ServiceValues в url.Values
 **/
-func (adapter *HTTPAdapter) convertToQueries(values ServiceValues) url.Values {
+func (adapter *HTTPAdapter) convertToQueries(values core.ServiceValues) url.Values {
 	queries := make(url.Values)
 
 	// Перекладываем из ParamsValues в url.Values из-за риска смены дочернего типа
@@ -102,7 +101,7 @@ func (adapter *HTTPAdapter) makeURL(queries url.Values) string {
 	return fmt.Sprintf("%v/?%v", adapter.Host, queries.Encode())
 }
 
-func (adapter *HTTPAdapter) formatValues(values ServiceValues) (ServiceValues, error) {
+func (adapter *HTTPAdapter) formatValues(values core.ServiceValues) (core.ServiceValues, error) {
 	for key := range values {
 		if values.IsBool(key) {
 			boolValue, err := strconv.ParseBool(values.Get(key))

@@ -1,6 +1,7 @@
-package megad2561
+package configs
 
 import (
+	"github.com/echokepler/megad2561/adapter"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"io/ioutil"
@@ -51,7 +52,7 @@ func TestMegadIDConfig_Apply(t *testing.T) {
 				assert.Equal(t, tc.expected, r.URL.String())
 			}))
 
-			service := HTTPAdapter{
+			service := adapter.HTTPAdapter{
 				Host: server.URL,
 			}
 
@@ -71,7 +72,7 @@ func TestMegadIDConfig_Sync(t *testing.T) {
 		var server *httptest.Server
 		var config MegadIDConfig
 
-		file, err := ioutil.ReadFile("./mock/megadidconfig.html")
+		file, err := ioutil.ReadFile("./__mocks__/megadidconfig.html")
 		if err != nil {
 			t.Error(err)
 		}
@@ -83,7 +84,7 @@ func TestMegadIDConfig_Sync(t *testing.T) {
 			}
 		}))
 
-		service := HTTPAdapter{
+		service := adapter.HTTPAdapter{
 			Host: server.URL,
 		}
 

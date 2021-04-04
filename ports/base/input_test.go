@@ -1,6 +1,7 @@
-package megad2561
+package base
 
 import (
+	"github.com/echokepler/megad2561/core"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -10,53 +11,53 @@ func TestPortInput_Read(t *testing.T) {
 
 	testCases := []struct {
 		name     string
-		values   ServiceValues
-		expected PortInput
+		values   core.ServiceValues
+		expected InputPort
 	}{
 		{
 			name: "Should be PortMode Click after read",
-			values: ServiceValues{
+			values: core.ServiceValues{
 				"m":  []string{"3"},
 				"af": []string{"true"},
 			},
-			expected: PortInput{
+			expected: InputPort{
 				Mode:           CLICK,
 				ForceSendToNet: true,
 			},
 		},
 		{
 			name: "Should be Port is muted after read",
-			values: ServiceValues{
+			values: core.ServiceValues{
 				"mt": []string{"true"},
 			},
-			expected: PortInput{
+			expected: InputPort{
 				IsMute: true,
 			},
 		},
 		{
 			name: "Should be Port raw mode disabled after read",
-			values: ServiceValues{
+			values: core.ServiceValues{
 				"d": []string{"true"},
 			},
-			expected: PortInput{
+			expected: InputPort{
 				IsRaw: true,
 			},
 		},
 		{
 			name: "Must be a property commands after reading",
-			values: ServiceValues{
+			values: core.ServiceValues{
 				"ecmd": []string{"21:2;g0:0"},
 			},
-			expected: PortInput{
+			expected: InputPort{
 				Commands: "21:2;g0:0",
 			},
 		},
 		{
 			name: "Must be a property net commands after reading",
-			values: ServiceValues{
+			values: core.ServiceValues{
 				"eth": []string{"0.0.0.0/megad.php"},
 			},
-			expected: PortInput{
+			expected: InputPort{
 				NetCommandAddress: "0.0.0.0/megad.php",
 			},
 		},
@@ -64,7 +65,7 @@ func TestPortInput_Read(t *testing.T) {
 
 	for _, tCase := range testCases {
 		t.Run(tCase.name, func(t *testing.T) {
-			actualPort := PortInput{}
+			actualPort := InputPort{}
 
 			err := actualPort.Read(tCase.values)
 			if err != nil {
@@ -81,13 +82,13 @@ func TestPortInput_Write(t *testing.T) {
 
 	testCases := []struct {
 		name     string
-		actual   PortInput
-		expected ServiceValues
+		actual   InputPort
+		expected core.ServiceValues
 	}{
 		{
 			name: "Should be return correct values",
-			actual: PortInput{
-				BasePort: &BasePort{
+			actual: InputPort{
+				Port: &Port{
 					ID: 0,
 				},
 				Commands: "22:2",
@@ -95,7 +96,7 @@ func TestPortInput_Write(t *testing.T) {
 				IsMute:   true,
 				Mode:     PR,
 			},
-			expected: ServiceValues{
+			expected: core.ServiceValues{
 				"ecmd": []string{"22:2"},
 				"eth":  []string{""},
 				"m":    []string{"2"},
@@ -107,13 +108,13 @@ func TestPortInput_Write(t *testing.T) {
 		},
 		{
 			name: "Should be return correct values with mode P",
-			actual: PortInput{
-				BasePort: &BasePort{
+			actual: InputPort{
+				Port: &Port{
 					ID: 0,
 				},
 				Mode: P,
 			},
-			expected: ServiceValues{
+			expected: core.ServiceValues{
 				"ecmd": []string{""},
 				"eth":  []string{""},
 				"m":    []string{"0"},
@@ -125,13 +126,13 @@ func TestPortInput_Write(t *testing.T) {
 		},
 		{
 			name: "Should be return correct values with mode R",
-			actual: PortInput{
-				BasePort: &BasePort{
+			actual: InputPort{
+				Port: &Port{
 					ID: 0,
 				},
 				Mode: R,
 			},
-			expected: ServiceValues{
+			expected: core.ServiceValues{
 				"ecmd": []string{""},
 				"eth":  []string{""},
 				"m":    []string{"1"},

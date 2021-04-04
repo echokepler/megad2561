@@ -1,6 +1,7 @@
-package megad2561
+package configs
 
 import (
+	"github.com/echokepler/megad2561/core"
 	"strconv"
 	"strings"
 )
@@ -38,8 +39,8 @@ type MainConfig struct {
 	UART
 }
 
-func (config *MainConfig) Read(service ServiceAdapter) error {
-	params := ServiceValues{}
+func (config *MainConfig) Read(service core.ServiceAdapter) error {
+	params := core.ServiceValues{}
 
 	params.Add("cf", MainConfigPath)
 
@@ -81,8 +82,8 @@ func (config *MainConfig) Read(service ServiceAdapter) error {
 }
 
 // Write Отправляет значения в контроллер
-func (config *MainConfig) Write(service ServiceAdapter) error {
-	values := ServiceValues{}
+func (config *MainConfig) Write(service core.ServiceAdapter) error {
+	values := core.ServiceValues{}
 
 	values.Add("cf", MainConfigPath)
 	values.Add("eip", config.IP)

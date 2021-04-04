@@ -1,25 +1,26 @@
 package main
 
 import (
-	"github.com/echokepler/megad2561"
+	"github.com/echokepler/megad2561/client"
+	"github.com/echokepler/megad2561/ports/base"
 )
 
 func main() {
-	options := megad2561.OptionsController{
+	options := client.OptionsController{
 		Host:     "192.168.88.14",
 		Password: "sec",
 	}
-	controller, err := megad2561.NewController(options)
+	controller, err := client.NewController(options)
 	if err != nil {
 		panic(err)
 	}
 
-	port, err := controller.Ports.GetByID(4, megad2561.InputType)
+	port, err := controller.Ports.GetByID(4, base.InputType)
 	if err != nil {
 		panic(err)
 	}
 
-	portInput := port.(*megad2561.PortInput)
+	portInput := port.(*base.InputPort)
 	portInput.Commands = "22:2|g0:0;g1:0;22:0"
 
 	err = controller.Ports.Set(port)

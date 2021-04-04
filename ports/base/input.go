@@ -1,6 +1,7 @@
-package megad2561
+package base
 
 import (
+	"github.com/echokepler/megad2561/core"
 	"strconv"
 )
 
@@ -22,8 +23,8 @@ const (
 	CLICK
 )
 
-type PortInput struct {
-	*BasePort
+type InputPort struct {
+	*Port
 
 	Commands string // @TODO need implements for command
 
@@ -54,7 +55,7 @@ type PortInput struct {
 	IsMute bool
 }
 
-func (port *PortInput) Read(values ServiceValues) error {
+func (port *InputPort) Read(values core.ServiceValues) error {
 	var err error
 
 	if values.Has("af") {
@@ -99,8 +100,8 @@ func (port *PortInput) Read(values ServiceValues) error {
 	return nil
 }
 
-func (port *PortInput) Write() (ServiceValues, error) {
-	values := ServiceValues{}
+func (port *InputPort) Write() (core.ServiceValues, error) {
+	values := core.ServiceValues{}
 
 	values.Add("ecmd", port.Commands)
 	values.Add("eth", port.NetCommandAddress)

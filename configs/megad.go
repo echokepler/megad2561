@@ -1,6 +1,7 @@
-package megad2561
+package configs
 
 import (
+	"github.com/echokepler/megad2561/core"
 	"strconv"
 )
 
@@ -13,8 +14,8 @@ type MegadIDConfig struct {
 	SrvLoop bool
 }
 
-func (config *MegadIDConfig) Read(service ServiceAdapter) error {
-	params := ServiceValues{}
+func (config *MegadIDConfig) Read(service core.ServiceAdapter) error {
+	params := core.ServiceValues{}
 
 	params.Add("cf", MegadIDConfigPath)
 
@@ -34,8 +35,8 @@ func (config *MegadIDConfig) Read(service ServiceAdapter) error {
 	return nil
 }
 
-func (config *MegadIDConfig) Write(service ServiceAdapter) error {
-	values := ServiceValues{}
+func (config *MegadIDConfig) Write(service core.ServiceAdapter) error {
+	values := core.ServiceValues{}
 
 	values.Add("cf", MegadIDConfigPath)
 	values.Add("mdid", config.MegadID)

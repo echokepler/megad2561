@@ -1,43 +1,44 @@
-package megad2561
+package base
 
 import (
+	"github.com/echokepler/megad2561/core"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
-func TestPortOutput_Read(t *testing.T) {
+func TestBaseOutputPort_Read(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
 		name     string
-		values   ServiceValues
-		expected PortOutput
+		values   core.ServiceValues
+		expected OutputPort
 	}{
 		{
 			name: "Should be PortMode SW after read",
-			values: ServiceValues{
+			values: core.ServiceValues{
 				"m":  []string{"0"},
 				"af": []string{"true"},
 			},
-			expected: PortOutput{
+			expected: OutputPort{
 				Mode: SW,
 			},
 		},
 		{
 			name: "Should be Port is enabled by default after read",
-			values: ServiceValues{
+			values: core.ServiceValues{
 				"d": []string{"true"},
 			},
-			expected: PortOutput{
+			expected: OutputPort{
 				IsEnabledByDefault: true,
 			},
 		},
 		{
 			name: "Should be Port Group is 1 after read",
-			values: ServiceValues{
+			values: core.ServiceValues{
 				"grp": []string{"1"},
 			},
-			expected: PortOutput{
+			expected: OutputPort{
 				Group: "1",
 			},
 		},
@@ -45,7 +46,7 @@ func TestPortOutput_Read(t *testing.T) {
 
 	for _, tCase := range testCases {
 		t.Run(tCase.name, func(t *testing.T) {
-			actualPort := PortOutput{}
+			actualPort := OutputPort{}
 
 			err := actualPort.Read(tCase.values)
 			if err != nil {
@@ -62,19 +63,19 @@ func TestPortOutput_Write(t *testing.T) {
 
 	testCases := []struct {
 		name     string
-		actual   PortOutput
-		expected ServiceValues
+		actual   OutputPort
+		expected core.ServiceValues
 	}{
 		{
 			name: "Should be return correct values",
-			actual: PortOutput{
-				BasePort: &BasePort{
+			actual: OutputPort{
+				Port: &Port{
 					ID: 0,
 				},
 				Group: "2",
 				Mode:  SW,
 			},
-			expected: ServiceValues{
+			expected: core.ServiceValues{
 				"m":   []string{"0"},
 				"grp": []string{""},
 				"d":   []string{"false"},
@@ -82,13 +83,13 @@ func TestPortOutput_Write(t *testing.T) {
 		},
 		{
 			name: "Should be return correct values with mode PWM",
-			actual: PortOutput{
-				BasePort: &BasePort{
+			actual: OutputPort{
+				Port: &Port{
 					ID: 0,
 				},
 				Mode: PWM,
 			},
-			expected: ServiceValues{
+			expected: core.ServiceValues{
 				"m":   []string{"1"},
 				"grp": []string{""},
 				"d":   []string{"false"},
@@ -96,13 +97,13 @@ func TestPortOutput_Write(t *testing.T) {
 		},
 		{
 			name: "Should be return correct values with mode SWL",
-			actual: PortOutput{
-				BasePort: &BasePort{
+			actual: OutputPort{
+				Port: &Port{
 					ID: 0,
 				},
 				Mode: SWL,
 			},
-			expected: ServiceValues{
+			expected: core.ServiceValues{
 				"m":   []string{"2"},
 				"grp": []string{""},
 				"d":   []string{"false"},
@@ -110,13 +111,13 @@ func TestPortOutput_Write(t *testing.T) {
 		},
 		{
 			name: "Should be return correct values with mode DS2413",
-			actual: PortOutput{
-				BasePort: &BasePort{
+			actual: OutputPort{
+				Port: &Port{
 					ID: 0,
 				},
 				Mode: DS2413,
 			},
-			expected: ServiceValues{
+			expected: core.ServiceValues{
 				"m":   []string{"3"},
 				"grp": []string{""},
 				"d":   []string{"false"},

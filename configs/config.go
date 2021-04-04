@@ -1,13 +1,15 @@
-package megad2561
+package configs
+
+import "github.com/echokepler/megad2561/core"
 
 type ConfigReader interface {
-	Read(service ServiceAdapter) error
-	Write(service ServiceAdapter) error
+	Read(service core.ServiceAdapter) error
+	Write(service core.ServiceAdapter) error
 }
 
 type Configs []ConfigReader
 
-func (cs Configs) Read(service ServiceAdapter) error {
+func (cs Configs) Read(service core.ServiceAdapter) error {
 	for _, config := range cs {
 		err := config.Read(service)
 		if err != nil {
@@ -18,7 +20,7 @@ func (cs Configs) Read(service ServiceAdapter) error {
 	return nil
 }
 
-func (cs Configs) Write(service ServiceAdapter) error {
+func (cs Configs) Write(service core.ServiceAdapter) error {
 	for _, config := range cs {
 		err := config.Write(service)
 		if err != nil {

@@ -1,6 +1,9 @@
-package megad2561
+package base
 
-import "strconv"
+import (
+	"github.com/echokepler/megad2561/core"
+	"strconv"
+)
 
 type ModeTypeOUT int
 
@@ -11,8 +14,8 @@ const (
 	DS2413
 )
 
-type PortOutput struct {
-	*BasePort
+type OutputPort struct {
+	*Port
 
 	IsEnabledByDefault bool
 
@@ -21,7 +24,7 @@ type PortOutput struct {
 	Group string
 }
 
-func (port *PortOutput) Read(values ServiceValues) error {
+func (port *OutputPort) Read(values core.ServiceValues) error {
 	var err error
 
 	if values.Has("m") {
@@ -45,8 +48,8 @@ func (port *PortOutput) Read(values ServiceValues) error {
 	return nil
 }
 
-func (port *PortOutput) Write() (ServiceValues, error) {
-	values := ServiceValues{}
+func (port *OutputPort) Write() (core.ServiceValues, error) {
+	values := core.ServiceValues{}
 
 	values.Add("d", strconv.FormatBool(port.IsEnabledByDefault))
 	values.Add("m", strconv.FormatInt(int64(port.Mode), 10))

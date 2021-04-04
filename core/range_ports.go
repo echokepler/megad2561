@@ -1,4 +1,4 @@
-package megad2561
+package core
 
 import (
 	"strconv"

@@ -8,6 +8,27 @@ import (
 	"testing"
 )
 
+func TestSerializeForms(t *testing.T) {
+	file, err := os.Open("./mock/forms.html")
+	if err != nil {
+		t.Error(err)
+	}
+
+	document, err := goquery.NewDocumentFromReader(file)
+	if err != nil {
+		t.Error(err)
+	}
+
+	fs := formserializer.SerializeForms(document)
+
+	t.Run("Should be serialized two forms", func(t *testing.T) {
+		assert.Equal(t, 2, len(fs.Texts))
+
+		assert.Equal(t, "val1", fs.Texts[0].Value)
+		assert.Equal(t, "val2", fs.Texts[1].Value)
+	})
+}
+
 func TestFormSerializer_Serialize(t *testing.T) {
 	file, err := os.Open("./mock/form.html")
 	if err != nil {

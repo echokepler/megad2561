@@ -1,9 +1,17 @@
-package megad2561
+package core
 
 import "net/url"
 
 /**
-* По сути ServiceValues и ParamsValues нужны в качестве подстраховки на случай смены структуры этих типов.
+* Общий интерфейс сервис адаптера, далее по нему могут быть реализованы нативный и кастомные адаптеры
+**/
+type ServiceAdapter interface {
+	Get(params ServiceValues) (ServiceValues, error)
+	Post(values ServiceValues) error
+}
+
+/**
+* По сути ServiceValues нужен в качестве подстраховки на случай смены структуры этих типов.
 * Использование url.Values является более подходящим,
   т.к все общение с контроллером далее происходит по query параметрам
 *
@@ -50,12 +58,4 @@ func (sv ServiceValues) IsBool(key string) bool {
 	default:
 		return false
 	}
-}
-
-/**
-* Общий интерфейс сервис адаптера, далее по нему могут быть реализованы нативный и кастомные адаптеры
-**/
-type ServiceAdapter interface {
-	Get(params ServiceValues) (ServiceValues, error)
-	Post(values ServiceValues) error
 }

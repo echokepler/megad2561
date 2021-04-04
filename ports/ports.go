@@ -1,21 +1,23 @@
-package megad2561
+package ports
 
 import (
 	"errors"
 	"fmt"
+	"github.com/echokepler/megad2561/core"
+	"github.com/echokepler/megad2561/ports/base"
 	"strconv"
 )
 
 type Ports struct {
-	service ServiceAdapter
+	Service core.ServiceAdapter
 	Records map[int]PortReader
 }
 
 // Read считываем информацию со всех портов.
 //
 // В данный момент беру все порты до XP5andXP6, не очень хорошая реализация, но поправимо в будущем.
-func (ports *Ports) Read() error {
-	maxRangeInt, err := XP5andXP6.GetRange()
+func (p *Ports) Read() error {
+	maxRangeInt, err := core.XP5andXP6.GetRange()
 	if err != nil {
 		return err
 	}
@@ -23,10 +25,10 @@ func (ports *Ports) Read() error {
 	IDs := make([]int, maxRangeInt[1])
 
 	for id := range IDs {
-		params := ServiceValues{}
+		params := core.ServiceValues{}
 
 		params.Add("pt", strconv.FormatInt(int64(id), 10))
-		values, err := ports.service.Get(params)
+		values, err := p.Service.Get(params)
 		if err != nil {
 			return err
 		}
@@ -41,14 +43,14 @@ func (ports *Ports) Read() error {
 			continue
 		}
 
-		ports.Records[id] = port
+		p.Records[id] = port
 	}
 
 	return nil
 }
 
-func (ports *Ports) GetByID(id int, t PortType) (PortReader, error) {
-	port := ports.Records[id]
+func (p *Ports) GetByID(id int, t base.PortType) (PortReader, error) {
+	port := p.Records[id]
 
 	if t != port.GetType() {
 		return nil, errors.New("port not found")
@@ -57,10 +59,10 @@ func (ports *Ports) GetByID(id int, t PortType) (PortReader, error) {
 	return port, nil
 }
 
-func (ports *Ports) Set(reader PortReader) error {
-	ports.Records[reader.GetID()] = reader
+func (p *Ports) Set(reader PortReader) error {
+	p.Records[reader.GetID()] = reader
 
-	port := ports.Records[reader.GetID()]
+	port := p.Records[reader.GetID()]
 	values, err := port.Write()
 	if err != nil {
 		return err
@@ -69,5 +71,5 @@ func (ports *Ports) Set(reader PortReader) error {
 	values.Add("pn", strconv.FormatInt(int64(port.GetID()), 10))
 	values.Add("pty", strconv.FormatInt(int64(port.GetType()), 10))
 
-	return ports.service.Post(values)
+	return p.Service.Post(values)
 }

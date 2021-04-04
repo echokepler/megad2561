@@ -43,6 +43,29 @@ type FormSerializer struct {
 	Selects    []Select
 }
 
+// SerializeForms сериализует все формы найденные в документе и складывает поля в один контейнер.
+func SerializeForms(document *goquery.Document) FormSerializer {
+	fs := FormSerializer{}
+
+	document.Find("form").Each(func(i int, form *goquery.Selection) {
+		serializedForm := Serialize(form)
+
+		for _, checkbox := range serializedForm.Checkboxes {
+			fs.Checkboxes = append(fs.Checkboxes, checkbox)
+		}
+
+		for _, text := range serializedForm.Texts {
+			fs.Texts = append(fs.Texts, text)
+		}
+
+		for _, sel := range serializedForm.Selects {
+			fs.Selects = append(fs.Selects, sel)
+		}
+	})
+
+	return fs
+}
+
 func Serialize(target *goquery.Selection) FormSerializer {
 	fs := FormSerializer{}
 

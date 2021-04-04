@@ -1,22 +1,28 @@
-package megad2561
+package client
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/echokepler/megad2561/adapter"
+	"github.com/echokepler/megad2561/configs"
+	"github.com/echokepler/megad2561/core"
+	"github.com/echokepler/megad2561/ports"
+)
 
 type OptionsController struct {
 	Host     string
 	Password string
-	ServiceAdapter
+	core.ServiceAdapter
 }
 
 type Controller struct {
 	host     string
 	password string
-	service  ServiceAdapter
-	Ports    Ports
-	MainConfig
-	MegadIDConfig
+	service  core.ServiceAdapter
+	Ports    ports.Ports
+	configs.MainConfig
+	configs.MegadIDConfig
 
-	configs Configs
+	configs configs.Configs
 }
 
 /**
@@ -25,10 +31,10 @@ type Controller struct {
 * В дальнейшем будет служить для инициализации http сервиса и mqtt соединения
 **/
 func NewController(opts OptionsController) (*Controller, error) {
-	var service ServiceAdapter
+	var service core.ServiceAdapter
 
 	if opts.ServiceAdapter == nil {
-		service = &HTTPAdapter{
+		service = &adapter.HTTPAdapter{
 			Host: fmt.Sprintf("http://%v/%v", opts.Host, opts.Password),
 		}
 	}
@@ -37,20 +43,20 @@ func NewController(opts OptionsController) (*Controller, error) {
 		host:     opts.Host,
 		password: opts.Password,
 		service:  service,
-		Ports: Ports{
-			service: service,
-			Records: map[int]PortReader{},
+		Ports: ports.Ports{
+			Service: service,
+			Records: map[int]ports.PortReader{},
 		},
 	}
 
-	configs := Configs{
+	configList := configs.Configs{
 		&controller.MainConfig,
 		&controller.MegadIDConfig,
 	}
 
-	controller.configs = configs
+	controller.configs = configList
 
-	err := configs.Read(controller.service)
+	err := configList.Read(controller.service)
 	if err != nil {
 		return nil, err
 	}

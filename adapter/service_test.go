@@ -1,6 +1,7 @@
-package megad2561
+package adapter
 
 import (
+	"github.com/echokepler/megad2561/core"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"io/ioutil"
@@ -15,7 +16,7 @@ func TestHTTPAdapter_Get(t *testing.T) {
 		t.Parallel()
 		var server *httptest.Server
 
-		file, err := ioutil.ReadFile("./mock/programconfig.html")
+		file, err := ioutil.ReadFile("./__mock__/programconfig.html")
 		if err != nil {
 			t.Error("Cant read programconfig.html")
 		}
@@ -31,7 +32,7 @@ func TestHTTPAdapter_Get(t *testing.T) {
 			Host: server.URL,
 		}
 
-		values, _ := httpAdapter.Get(ServiceValues{})
+		values, _ := httpAdapter.Get(core.ServiceValues{})
 
 		assert.Equal(t, "prp", values.Get("prp"), "Input PRP")
 		assert.Equal(t, "0", values.Get("prc"), "Select PRC")
@@ -45,7 +46,7 @@ func TestHTTPAdapter_formatValues(t *testing.T) {
 	t.Run("Should convert strconv bool to 0 or 1", func(t *testing.T) {
 		httpAdapter := HTTPAdapter{}
 
-		originalValues := ServiceValues{}
+		originalValues := core.ServiceValues{}
 
 		originalValues.Add("bool", strconv.FormatBool(true))
 		formattedValues, err := httpAdapter.formatValues(originalValues)
