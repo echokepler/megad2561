@@ -29,7 +29,7 @@ func NewController(opts OptionsController) (*Controller, error) {
 
 	if opts.ServiceAdapter == nil {
 		service = &HTTPAdapter{
-			Host: fmt.Sprintf("%v/%v", opts.Host, opts.Password),
+			Host: fmt.Sprintf("http://%v/%v", opts.Host, opts.Password),
 		}
 	}
 

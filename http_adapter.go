@@ -99,7 +99,7 @@ func (adapter *HTTPAdapter) convertToQueries(values ServiceValues) url.Values {
 * makeURL Собирает итоговый URL
 **/
 func (adapter *HTTPAdapter) makeURL(queries url.Values) string {
-	return fmt.Sprintf("http://%v/?%v", adapter.Host, queries.Encode())
+	return fmt.Sprintf("%v/?%v", adapter.Host, queries.Encode())
 }
 
 func (adapter *HTTPAdapter) formatValues(values ServiceValues) (ServiceValues, error) {

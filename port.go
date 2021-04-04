@@ -31,6 +31,7 @@ func (p *BasePort) GetType() PortType {
 }
 
 func NewPort(id int, values ServiceValues) (PortReader, error) {
+	var port PortReader
 	portTypeInt, err := strconv.ParseInt(values.Get("pty"), 10, 64)
 	if err != nil {
 		return nil, err
@@ -42,17 +43,22 @@ func NewPort(id int, values ServiceValues) (PortReader, error) {
 
 	switch basePort.t {
 	case InputType:
-		port := PortInput{
+		port = PortReader(&PortInput{
 			BasePort: &basePort,
-		}
+		})
 
-		err := port.Read(values)
-		if err != nil {
-			return nil, nil
-		}
-
-		return PortReader(&port), nil
+	case OutputType:
+		port = PortReader(&PortInput{
+			BasePort: &basePort,
+		})
 	default:
 		return nil, nil
 	}
+
+	err = port.Read(values)
+	if err != nil {
+		return nil, err
+	}
+
+	return port, nil
 }

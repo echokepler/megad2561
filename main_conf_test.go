@@ -64,21 +64,21 @@ func TestMainConfig_Apply(t *testing.T) {
 				config.IP = "192.168.88.14"
 				config.Pwd = "sec"
 			},
-			expected: "/?cf=cf1&eip=192.168.88.14&gsm=0&gw=&pr=&pwd=sec&sip=&srvt=0",
+			expected: "/?cf=1&eip=192.168.88.14&gsm=0&gw=&pr=&pwd=sec&sip=&srvt=0",
 		},
 		{
 			name: "Should be return params with enabled mqtt",
 			cb: func(config *MainConfig) {
 				config.SetMQTTServer("192.168.88.14", "")
 			},
-			expected: "/?auth=&cf=cf1&eip=&gsm=0&gw=&pr=&pwd=&sip=192.168.88.14&srvt=1",
+			expected: "/?auth=&cf=1&eip=&gsm=0&gw=&pr=&pwd=&sip=192.168.88.14&srvt=1",
 		},
 		{
 			name: "Should be assign mqtt password when enabled",
 			cb: func(config *MainConfig) {
 				config.SetMQTTServer("192.168.88.14", "password")
 			},
-			expected: "/?auth=password&cf=cf1&eip=&gsm=0&gw=&pr=&pwd=&sip=192.168.88.14&srvt=1",
+			expected: "/?auth=password&cf=1&eip=&gsm=0&gw=&pr=&pwd=&sip=192.168.88.14&srvt=1",
 		},
 		{
 			name: "Should be switch to http server",
@@ -86,7 +86,7 @@ func TestMainConfig_Apply(t *testing.T) {
 				config.SetMQTTServer("192.168.88.14", "")
 				config.SetHTTPServer("192.168.88.1")
 			},
-			expected: "/?cf=cf1&eip=&gsm=0&gw=&pr=&pwd=&sip=192.168.88.1&srvt=0",
+			expected: "/?cf=1&eip=&gsm=0&gw=&pr=&pwd=&sip=192.168.88.1&srvt=0",
 		},
 		{
 			name: "Should be disable mqtt and http server",
@@ -95,7 +95,7 @@ func TestMainConfig_Apply(t *testing.T) {
 				config.SetHTTPServer("192.168.88.1")
 				config.DisableSrv()
 			},
-			expected: "/?cf=cf1&eip=&gsm=0&gw=&pr=&pwd=&sip=255.255.255.255",
+			expected: "/?cf=1&eip=&gsm=0&gw=&pr=&pwd=&sip=255.255.255.255",
 		},
 	}
 

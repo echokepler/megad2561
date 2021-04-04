@@ -96,8 +96,6 @@ func TestPortInput_Write(t *testing.T) {
 				Mode:     PR,
 			},
 			expected: ServiceValues{
-				"pn":   []string{"0"},
-				"pty":  []string{"0"},
 				"ecmd": []string{"22:2"},
 				"eth":  []string{""},
 				"m":    []string{"2"},
@@ -116,8 +114,6 @@ func TestPortInput_Write(t *testing.T) {
 				Mode: P,
 			},
 			expected: ServiceValues{
-				"pn":   []string{"0"},
-				"pty":  []string{"0"},
 				"ecmd": []string{""},
 				"eth":  []string{""},
 				"m":    []string{"0"},
@@ -136,8 +132,6 @@ func TestPortInput_Write(t *testing.T) {
 				Mode: R,
 			},
 			expected: ServiceValues{
-				"pn":   []string{"0"},
-				"pty":  []string{"0"},
 				"ecmd": []string{""},
 				"eth":  []string{""},
 				"m":    []string{"1"},

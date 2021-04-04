@@ -28,14 +28,14 @@ func TestMegadIDConfig_Apply(t *testing.T) {
 			cb: func(config *MegadIDConfig) {
 				config.MegadID = "test"
 			},
-			expected: "/?cf=cf2&mdid=test&sl=0",
+			expected: "/?cf=2&mdid=test",
 		},
 		{
 			name: "Should be return enabled srv loop",
 			cb: func(config *MegadIDConfig) {
 				config.SrvLoop = true
 			},
-			expected: "/?cf=cf2&mdid=&sl=1",
+			expected: "/?cf=2&mdid=&sl=1",
 		},
 	}
 

@@ -102,8 +102,6 @@ func (port *PortInput) Read(values ServiceValues) error {
 func (port *PortInput) Write() (ServiceValues, error) {
 	values := ServiceValues{}
 
-	values.Add("pn", strconv.FormatInt(int64(port.BasePort.ID), 10))
-	values.Add("pty", strconv.FormatInt(int64(port.GetType()), 10))
 	values.Add("ecmd", port.Commands)
 	values.Add("eth", port.NetCommandAddress)
 	values.Add("m", strconv.FormatInt(int64(port.Mode), 10))

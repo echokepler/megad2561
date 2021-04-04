@@ -66,5 +66,8 @@ func (ports *Ports) Set(reader PortReader) error {
 		return err
 	}
 
+	values.Add("pn", strconv.FormatInt(int64(port.GetID()), 10))
+	values.Add("pty", strconv.FormatInt(int64(port.GetType()), 10))
+
 	return ports.service.Post(values)
 }
