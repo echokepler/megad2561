@@ -6,8 +6,8 @@
 
 **Порты:**
 - [x] Input
-- [ ] Output
-  - [ ] Base
+- [x] Output
+  - [x] Base
   - [ ] PWM
 - [ ] АЦП
 - [ ] Dsen
