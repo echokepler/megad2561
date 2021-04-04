@@ -1,6 +1,8 @@
 package megad2561
 
-import "strconv"
+import (
+	"strconv"
+)
 
 type ModeType uint8
 
@@ -53,29 +55,45 @@ type PortInput struct {
 }
 
 func (port *PortInput) Read(values ServiceValues) error {
-	mode, err := strconv.ParseInt(values.Get("m"), 10, 64)
-	if err != nil {
-		return err
+	var err error
+
+	if values.Has("af") {
+		port.ForceSendToNet, err = strconv.ParseBool(values.Get("af"))
+		if err != nil {
+			return err
+		}
 	}
 
-	port.ForceSendToNet, err = strconv.ParseBool(values.Get("af"))
-	if err != nil {
-		return err
+	if values.Has("naf") {
+		port.NetEnableOnlyOnFailure, err = strconv.ParseBool(values.Get("naf"))
+		if err != nil {
+			return err
+		}
 	}
-	port.NetEnableOnlyOnFailure, err = strconv.ParseBool(values.Get("naf"))
-	if err != nil {
-		return err
+
+	if values.Has("d") {
+		port.IsRaw, err = strconv.ParseBool(values.Get("d"))
+		if err != nil {
+			return err
+		}
 	}
-	port.Mode = ModeType(mode)
+
+	if values.Has("mt") {
+		port.IsMute, err = strconv.ParseBool(values.Get("mt"))
+		if err != nil {
+			return err
+		}
+	}
+
+	if values.Has("m") {
+		mode, err := strconv.ParseInt(values.Get("m"), 10, 64)
+		if err != nil {
+			return err
+		}
+		port.Mode = ModeType(mode)
+	}
+
 	port.Commands = values.Get("ecmd")
-	port.IsRaw, err = strconv.ParseBool(values.Get("d"))
-	if err != nil {
-		return err
-	}
-	port.IsMute, err = strconv.ParseBool(values.Get("mt"))
-	if err != nil {
-		return err
-	}
 	port.NetCommandAddress = values.Get("eth")
 
 	return nil

@@ -31,6 +31,10 @@ func (sv ServiceValues) Get(key string) string {
 	return sv[key][0]
 }
 
+func (sv ServiceValues) Has(key string) bool {
+	return sv[key] != nil
+}
+
 func (sv ServiceValues) Del(key string) {
 	delete(sv, key)
 }
