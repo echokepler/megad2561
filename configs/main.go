@@ -2,8 +2,7 @@ package configs
 
 import (
 	"github.com/echokepler/megad2561/core"
-	"strconv"
-	"strings"
+	"github.com/echokepler/megad2561/internal/qsparser"
 )
 
 type (
@@ -27,99 +26,101 @@ const (
 	MatchLengthSrvMask = 4
 )
 
-type MainConfig struct {
-	IP           string
-	Pwd          string
-	Gateway      string
-	Srv          string
-	SrvType      SrvType
-	ScriptPath   string
-	MqttPassword string
-	Wdog         string
-	UART
+// MainSettings основные настройки контроллера
+type MainSettings struct {
+	IP           string  `qs:"eip"`
+	Pwd          string  `qs:"pwd"`
+	Gateway      string  `qs:"gw"`
+	Srv          string  `qs:"sip"`
+	SrvType      SrvType `qs:"srvt"`
+	ScriptPath   string  `qs:"sct"`
+	MqttPassword string  `qs:"auth"`
+	Wdog         string  `qs:"pr"`
+	UART         `qs:"gsm"`
 }
 
-func (config *MainConfig) Read(service core.ServiceAdapter) error {
+type MainConfig struct {
+	service    core.ServiceAdapter
+	attributes MainSettings
+}
+
+// NewMainConfig конструктор основного конфига
+func NewMainConfig(service core.ServiceAdapter) *MainConfig {
+	return &MainConfig{service: service}
+}
+
+// GetSettings возвращает текущее состояние конфига
+func (config *MainConfig) GetSettings() MainSettings {
+	return config.attributes
+}
+
+// Update в коллбеке принимаем текущие параметры конфига и возвращаем новые
+//
+// Возвращенное состояние параметров будет обновлено
+func (config *MainConfig) Update(cb func(settings MainSettings) MainSettings) error {
+	updatedSettings := cb(config.attributes)
+
+	config.attributes = updatedSettings
+	return config.write()
+}
+
+/**
+* Private
+**/
+
+func (config *MainConfig) read() error {
 	params := core.ServiceValues{}
 
 	params.Add("cf", MainConfigPath)
 
-	values, err := service.Get(params)
+	values, err := config.service.Get(params)
 	if err != nil {
 		return err
 	}
 
-	if len(values.Get("srvt")) > 0 {
-		srvTypeInt, err := strconv.ParseInt(values.Get("srvt"), 10, 64)
-		if err != nil {
-			return err
-		}
-
-		config.SrvType = SrvType(srvTypeInt)
-	}
-
-	if len(values.Get("gsm")) > 0 {
-		uartInt, err := strconv.ParseInt(values.Get("gsm"), 10, 64)
-		if err != nil {
-			return err
-		}
-
-		config.UART = UART(uartInt)
-	}
-
-	config.IP = values.Get("eip")
-	config.Pwd = values.Get("pwd")
-	config.Gateway = values.Get("gw")
-	config.Srv = values.Get("sip")
-	config.Wdog = values.Get("pr")
-	config.ScriptPath = values.Get("sct")
-
-	if config.SrvType == MQTT {
-		config.MqttPassword = values.Get("auth")
-	}
-
-	return nil
+	return qsparser.UnMarshal(values, &config.attributes)
 }
 
-// Write Отправляет значения в контроллер
-func (config *MainConfig) Write(service core.ServiceAdapter) error {
-	values := core.ServiceValues{}
+// write Отправляет значения в контроллер
+//
+// Обрати внимание, что после каждого вызова write мы синхронизируем
+// конфиги, т.к внутри самого контролера может измениться логика валидации
+// и поле, которое мы хотели изменить может остаться прежним.
+func (config *MainConfig) write() error {
+	values := qsparser.Marshal(config.attributes)
 
 	values.Add("cf", MainConfigPath)
-	values.Add("eip", config.IP)
-	values.Add("pwd", config.Pwd)
-	values.Add("gw", config.Gateway)
-	values.Add("sip", config.Srv)
-	values.Add("pr", config.Wdog)
-	values.Add("gsm", strconv.FormatInt(int64(config.UART), 10))
 
-	if strings.Count(config.Srv, "255") != MatchLengthSrvMask {
-		values.Add("srvt", strconv.FormatInt(int64(config.SrvType), 10))
-
-		if config.SrvType == MQTT {
-			values.Add("auth", config.MqttPassword)
-		}
+	err := config.service.Post(values)
+	if err != nil {
+		return err
 	}
 
-	return service.Post(values)
+	return config.read()
 }
 
-func (config *MainConfig) SetMQTTServer(ip string, password string) {
-	config.Srv = ip
-	config.SrvType = MQTT
-	config.MqttPassword = password
+func (config *MainConfig) SetMQTTServer(ip string, password string) error {
+	config.attributes.Srv = ip
+	config.attributes.SrvType = MQTT
+	config.attributes.MqttPassword = password
+
+	return config.write()
 }
 
 // SetHTTPServer Выставляет HTTP сервер.
 //
 // Обрати внимание, что при этом контроллер отключится от MQTT сервера.
-func (config *MainConfig) SetHTTPServer(ip string) {
-	config.Srv = ip
-	config.SrvType = HTTP
-	config.MqttPassword = ""
+func (config *MainConfig) SetHTTPServer(ip string) error {
+	config.attributes.Srv = ip
+	config.attributes.SrvType = HTTP
+	config.attributes.MqttPassword = ""
+
+	return config.write()
 }
 
 // DisableSrv Устанавливает управление портами на уровень контроллера.
-func (config *MainConfig) DisableSrv() {
-	config.Srv = "255.255.255.255"
+func (config *MainConfig) DisableSrv() error {
+	config.attributes.Srv = "255.255.255.255"
+
+	return config.write()
 }

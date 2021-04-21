@@ -25,11 +25,8 @@ type Controller struct {
 	configs configs.Configs
 }
 
-/**
-* NewController создает инстанс контроллера.
-*
-* В дальнейшем будет служить для инициализации http сервиса и mqtt соединения
-**/
+// NewController создает инстанс контроллера.
+// В дальнейшем будет служить для инициализации http сервиса и mqtt соединения
 func NewController(opts OptionsController) (*Controller, error) {
 	var service core.ServiceAdapter
 
@@ -69,10 +66,7 @@ func NewController(opts OptionsController) (*Controller, error) {
 	return &controller, nil
 }
 
-/**
-* ApplyConfigsChanges применяет изменения, отправляея измененные конфиги в сервис.
-*
-**/
+// ApplyConfigsChanges применяет изменения, отправляея измененные конфиги в сервис.
 func (c *Controller) ApplyConfigsChanges() error {
 	return c.configs.Write(c.service)
 }

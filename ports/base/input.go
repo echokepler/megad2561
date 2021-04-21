@@ -2,7 +2,7 @@ package base
 
 import (
 	"github.com/echokepler/megad2561/core"
-	"strconv"
+	"github.com/echokepler/megad2561/internal/qsparser"
 )
 
 type ModeType uint8
@@ -23,10 +23,8 @@ const (
 	CLICK
 )
 
-type InputPort struct {
-	*Port
-
-	Commands string // @TODO need implements for command
+type InputSettings struct {
+	Commands string `qs:"ecmd"` // @TODO need implements for command
 
 	// ForceSendToNet eсли он не установлен (по умолчанию),
 	// то сценарий выполняется ТОЛЬКО если сервер не прописан,
@@ -34,82 +32,38 @@ type InputPort struct {
 	// Если флажок установлен, то сценарий выполняется всегда независимо от наличия сервера.
 	// Контроллер в этом случае будет сообщать на сервер о событиях,
 	// но его ответные команды в рамках одной TCP-сессии будут проигнорированы.
-	ForceSendToNet bool
+	ForceSendToNet bool `qs:"af"`
 
 	// NetCommandAddress В этом поле записывается URL, который MegaD-2561 вызывает независимо от того,
 	// есть сервер или его нет. Этот URL вызывается после попытки связи с сервером и после того,
 	// как отработает сценарий, описанный в поле Action. После IP-адреса можно указать порт.
 	// По умолчанию 80.
-	NetCommandAddress string
+	NetCommandAddress string `qs:"eth"`
 
 	// NetEnableOnlyOnFailure  указывает, что NetAction будет вызван ТОЛЬКО при недоступности сервера
 	// (или когда HTTP-статус ответа отличен от 200). По умолчанию вызывается всегда.
-	NetEnableOnlyOnFailure bool
+	NetEnableOnlyOnFailure bool `qs:"naf"`
 
-	Mode ModeType
+	Mode ModeType `qs:"m"`
 
 	// ModeRaw параметр отключает встроенную защиту от дребезга.
-	IsRaw bool
+	IsRaw bool `qs:"d"`
 
 	// ModeMute параметр отключает отправку информации на сервер о переключениях входа.
-	IsMute bool
+	IsMute bool `qs:"mt"`
 }
 
-func (port *InputPort) Read(values core.ServiceValues) error {
-	var err error
-
-	if values.Has("af") {
-		port.ForceSendToNet, err = strconv.ParseBool(values.Get("af"))
-		if err != nil {
-			return err
-		}
-	}
-
-	if values.Has("naf") {
-		port.NetEnableOnlyOnFailure, err = strconv.ParseBool(values.Get("naf"))
-		if err != nil {
-			return err
-		}
-	}
-
-	if values.Has("d") {
-		port.IsRaw, err = strconv.ParseBool(values.Get("d"))
-		if err != nil {
-			return err
-		}
-	}
-
-	if values.Has("mt") {
-		port.IsMute, err = strconv.ParseBool(values.Get("mt"))
-		if err != nil {
-			return err
-		}
-	}
-
-	if values.Has("m") {
-		mode, err := strconv.ParseInt(values.Get("m"), 10, 64)
-		if err != nil {
-			return err
-		}
-		port.Mode = ModeType(mode)
-	}
-
-	port.Commands = values.Get("ecmd")
-	port.NetCommandAddress = values.Get("eth")
-
-	return nil
+type InputPort struct {
+	*Port
+	settings InputSettings
 }
 
-func (port *InputPort) Write() (core.ServiceValues, error) {
-	values := core.ServiceValues{}
+func (port *InputPort) read(values core.ServiceValues) error {
+	return qsparser.UnMarshal(values, &port.settings)
+}
 
-	values.Add("ecmd", port.Commands)
-	values.Add("eth", port.NetCommandAddress)
-	values.Add("m", strconv.FormatInt(int64(port.Mode), 10))
-	values.Add("af", strconv.FormatBool(port.ForceSendToNet))
-	values.Add("naf", strconv.FormatBool(port.NetEnableOnlyOnFailure))
-	values.Add("d", strconv.FormatBool(port.IsRaw))
-	values.Add("mt", strconv.FormatBool(port.IsMute))
+func (port *InputPort) write() (core.ServiceValues, error) {
+	values := qsparser.Marshal(port.settings)
 
 	return values, nil
 }

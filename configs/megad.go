@@ -2,45 +2,46 @@ package configs
 
 import (
 	"github.com/echokepler/megad2561/core"
-	"strconv"
+	"github.com/echokepler/megad2561/internal/qsparser"
 )
 
 const (
 	MegadIDConfigPath = "2"
 )
 
-type MegadIDConfig struct {
-	MegadID string
-	SrvLoop bool
+// MegaIDSettings основные настройки контроллера
+type MegaIDSettings struct {
+	MegadID string `qs:"mdid"`
+	SrvLoop bool   `qs:"sl"`
 }
 
-func (config *MegadIDConfig) Read(service core.ServiceAdapter) error {
+type MegadIDConfig struct {
+	service    core.ServiceAdapter
+	attributes MegaIDSettings
+}
+
+func (config *MegadIDConfig) read() error {
 	params := core.ServiceValues{}
 
 	params.Add("cf", MegadIDConfigPath)
 
-	values, err := service.Get(params)
+	values, err := config.service.Get(params)
 	if err != nil {
 		return err
 	}
 
-	srvLoop, err := strconv.ParseBool(values.Get("sl"))
-	if err != nil {
-		return err
-	}
-
-	config.MegadID = values.Get("mdid")
-	config.SrvLoop = srvLoop
-
-	return nil
+	return qsparser.UnMarshal(values, &config.attributes)
 }
 
-func (config *MegadIDConfig) Write(service core.ServiceAdapter) error {
-	values := core.ServiceValues{}
+func (config *MegadIDConfig) write() error {
+	values := qsparser.Marshal(config.attributes)
 
 	values.Add("cf", MegadIDConfigPath)
-	values.Add("mdid", config.MegadID)
-	values.Add("sl", strconv.FormatBool(config.SrvLoop))
 
-	return service.Post(values)
+	err := config.service.Post(values)
+	if err != nil {
+		return err
+	}
+
+	return config.read()
 }

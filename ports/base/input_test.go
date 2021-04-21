@@ -21,8 +21,10 @@ func TestPortInput_Read(t *testing.T) {
 				"af": []string{"true"},
 			},
 			expected: InputPort{
-				Mode:           CLICK,
-				ForceSendToNet: true,
+				settings: InputSettings{
+					Mode:           CLICK,
+					ForceSendToNet: true,
+				},
 			},
 		},
 		{
@@ -31,7 +33,9 @@ func TestPortInput_Read(t *testing.T) {
 				"mt": []string{"true"},
 			},
 			expected: InputPort{
-				IsMute: true,
+				settings: InputSettings{
+					IsMute: true,
+				},
 			},
 		},
 		{
@@ -40,7 +44,9 @@ func TestPortInput_Read(t *testing.T) {
 				"d": []string{"true"},
 			},
 			expected: InputPort{
-				IsRaw: true,
+				settings: InputSettings{
+					IsRaw: true,
+				},
 			},
 		},
 		{
@@ -49,7 +55,9 @@ func TestPortInput_Read(t *testing.T) {
 				"ecmd": []string{"21:2;g0:0"},
 			},
 			expected: InputPort{
-				Commands: "21:2;g0:0",
+				settings: InputSettings{
+					Commands: "21:2;g0:0",
+				},
 			},
 		},
 		{
@@ -58,7 +66,9 @@ func TestPortInput_Read(t *testing.T) {
 				"eth": []string{"0.0.0.0/megad.php"},
 			},
 			expected: InputPort{
-				NetCommandAddress: "0.0.0.0/megad.php",
+				settings: InputSettings{
+					NetCommandAddress: "0.0.0.0/megad.php",
+				},
 			},
 		},
 	}
@@ -67,7 +77,7 @@ func TestPortInput_Read(t *testing.T) {
 		t.Run(tCase.name, func(t *testing.T) {
 			actualPort := InputPort{}
 
-			err := actualPort.Read(tCase.values)
+			err := actualPort.read(tCase.values)
 			if err != nil {
 				t.Error(err)
 			}
@@ -89,12 +99,14 @@ func TestPortInput_Write(t *testing.T) {
 			name: "Should be return correct values",
 			actual: InputPort{
 				Port: &Port{
-					ID: 0,
+					id: 0,
 				},
-				Commands: "22:2",
-				IsRaw:    true,
-				IsMute:   true,
-				Mode:     PR,
+				settings: InputSettings{
+					Commands: "22:2",
+					IsRaw:    true,
+					IsMute:   true,
+					Mode:     PR,
+				},
 			},
 			expected: core.ServiceValues{
 				"ecmd": []string{"22:2"},
@@ -110,9 +122,11 @@ func TestPortInput_Write(t *testing.T) {
 			name: "Should be return correct values with mode P",
 			actual: InputPort{
 				Port: &Port{
-					ID: 0,
+					id: 0,
 				},
-				Mode: P,
+				settings: InputSettings{
+					Mode: P,
+				},
 			},
 			expected: core.ServiceValues{
 				"ecmd": []string{""},
@@ -128,9 +142,11 @@ func TestPortInput_Write(t *testing.T) {
 			name: "Should be return correct values with mode R",
 			actual: InputPort{
 				Port: &Port{
-					ID: 0,
+					id: 0,
 				},
-				Mode: R,
+				settings: InputSettings{
+					Mode: R,
+				},
 			},
 			expected: core.ServiceValues{
 				"ecmd": []string{""},
@@ -148,7 +164,7 @@ func TestPortInput_Write(t *testing.T) {
 		t.Run(tCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			values, err := tCase.actual.Write()
+			values, err := tCase.actual.write()
 			if err != nil {
 				t.Error(err)
 

@@ -27,14 +27,14 @@ func TestMegadIDConfig_Apply(t *testing.T) {
 		{
 			name: "Should be return correct megad Id",
 			cb: func(config *MegadIDConfig) {
-				config.MegadID = "test"
+				config.attributes.MegadID = "test"
 			},
 			expected: "/?cf=2&mdid=test",
 		},
 		{
 			name: "Should be return enabled srv loop",
 			cb: func(config *MegadIDConfig) {
-				config.SrvLoop = true
+				config.attributes.SrvLoop = true
 			},
 			expected: "/?cf=2&mdid=&sl=1",
 		},
@@ -49,7 +49,9 @@ func TestMegadIDConfig_Apply(t *testing.T) {
 			var config MegadIDConfig
 
 			server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				assert.Equal(t, tc.expected, r.URL.String())
+				if r.Method == "POST" {
+					assert.Equal(t, tc.expected, r.URL.String())
+				}
 			}))
 
 			service := adapter.HTTPAdapter{
@@ -58,7 +60,9 @@ func TestMegadIDConfig_Apply(t *testing.T) {
 
 			tc.cb(&config)
 
-			err := config.Write(&service)
+			config.service = &service
+
+			err := config.write()
 			if err != nil {
 				t.Error(err)
 			}
@@ -88,12 +92,14 @@ func TestMegadIDConfig_Sync(t *testing.T) {
 			Host: server.URL,
 		}
 
-		err = config.Read(&service)
+		config.service = &service
+
+		err = config.read()
 		if err != nil {
 			t.Error(err)
 		}
 
-		assert.Equal(t, "megad", config.MegadID)
-		assert.Equal(t, true, config.SrvLoop)
+		assert.Equal(t, "megad", config.attributes.MegadID)
+		assert.Equal(t, true, config.attributes.SrvLoop)
 	})
 }

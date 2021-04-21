@@ -14,9 +14,7 @@ type HTTPAdapter struct {
 	Host string
 }
 
-/**
-* Get - запрашивает данные
-**/
+// Get - запрашивает данные
 func (adapter *HTTPAdapter) Get(params core.ServiceValues) (core.ServiceValues, error) {
 	values := core.ServiceValues{}
 
@@ -52,9 +50,7 @@ func (adapter *HTTPAdapter) Get(params core.ServiceValues) (core.ServiceValues, 
 	return values, nil
 }
 
-/**
-* Post - отправляет значения в сервис
-**/
+// Post - отправляет данные в сервис
 func (adapter *HTTPAdapter) Post(values core.ServiceValues) error {
 	formattedValues, err := adapter.formatValues(values)
 	if err != nil {

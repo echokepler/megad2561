@@ -8,12 +8,12 @@ const (
 )
 
 type Port struct {
-	ID int
+	id int
 	t  PortType
 }
 
 func (p *Port) GetID() int {
-	return p.ID
+	return p.id
 }
 
 func (p *Port) GetType() PortType {
