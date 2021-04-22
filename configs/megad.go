@@ -20,6 +20,12 @@ type MegadIDConfig struct {
 	attributes MegaIDSettings
 }
 
+func (config *MegadIDConfig) ChangeSettings(cb func(config MegaIDSettings) MegaIDSettings) error {
+	config.attributes = cb(config.attributes)
+
+	return config.write()
+}
+
 func (config *MegadIDConfig) read() error {
 	params := core.ServiceValues{}
 
@@ -34,7 +40,7 @@ func (config *MegadIDConfig) read() error {
 }
 
 func (config *MegadIDConfig) write() error {
-	values := qsparser.Marshal(config.attributes)
+	values := qsparser.Marshal(config.attributes, qsparser.MarshalOptions{})
 
 	values.Add("cf", MegadIDConfigPath)
 
@@ -44,4 +50,8 @@ func (config *MegadIDConfig) write() error {
 	}
 
 	return config.read()
+}
+
+func (config *MegadIDConfig) setService(adapter core.ServiceAdapter) {
+	config.service = adapter
 }

@@ -1,4 +1,4 @@
-package base
+package ports
 
 import (
 	"github.com/echokepler/megad2561/core"
@@ -23,8 +23,10 @@ const (
 	CLICK
 )
 
-type InputSettings struct {
-	Commands string `qs:"ecmd"` // @TODO need implements for command
+type InputPort struct {
+	*Port
+
+	Commands string `qs:"ecmd"`
 
 	// ForceSendToNet eсли он не установлен (по умолчанию),
 	// то сценарий выполняется ТОЛЬКО если сервер не прописан,
@@ -53,17 +55,34 @@ type InputSettings struct {
 	IsMute bool `qs:"mt"`
 }
 
-type InputPort struct {
-	*Port
-	settings InputSettings
+func NewInputPort(id int, service core.ServiceAdapter) *InputPort {
+	return &InputPort{
+		Port: &Port{
+			id:      id,
+			service: service,
+			t:       InputType,
+		},
+	}
+}
+
+func (port *InputPort) ChangeSettings(cb func(p InputPort) InputPort) error {
+	updatedPort := cb(*port)
+	values := qsparser.Marshal(updatedPort, qsparser.MarshalOptions{})
+
+	err := port.service.Post(values)
+	if err != nil {
+		return err
+	}
+
+	return port.read(values)
 }
 
 func (port *InputPort) read(values core.ServiceValues) error {
-	return qsparser.UnMarshal(values, &port.settings)
+	return qsparser.UnMarshal(values, port)
 }
 
 func (port *InputPort) write() (core.ServiceValues, error) {
-	values := qsparser.Marshal(port.settings)
+	values := qsparser.Marshal(*port, qsparser.MarshalOptions{})
 
 	return values, nil
 }

@@ -85,19 +85,110 @@ func TestMarshal(t *testing.T) {
 		{
 			name: "Should be correct marshal enum values",
 			t: struct {
-				SomeEnum Enum `qs:"enum"`
+				SomeEnum        Enum `qs:"enum"`
+				SomeEnumMore    Enum `qs:"enum_one"`
+				SomeEnumOneMore Enum `qs:"enum_three"`
 			}{
-				SomeEnum: Two,
+				SomeEnum:        Two,
+				SomeEnumMore:    One,
+				SomeEnumOneMore: Three,
 			},
 			expected: core.ServiceValues{
-				"enum": []string{"1"},
+				"enum":       []string{"1"},
+				"enum_one":   []string{"0"},
+				"enum_three": []string{"2"},
 			},
 		},
 	}
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			assert.EqualValues(t, tc.expected, Marshal(tc.t))
+			assert.EqualValues(t, tc.expected, Marshal(tc.t, MarshalOptions{}))
+		})
+	}
+
+	tCases := []struct {
+		Name     string
+		Expected core.ServiceValues
+		Settings MarshalOptions
+		Actual   interface{}
+	}{
+		{
+			Name: "Should be skip settings fields",
+			Expected: core.ServiceValues{
+				"field_two": []string{"two"},
+			},
+			Settings: MarshalOptions{
+				OnlySetters: true,
+			},
+			Actual: struct {
+				FieldOne    string `qs:"setting,field_one"`
+				StructField struct {
+					FieldTwo string `qs:"setter,field_two"`
+				}
+			}{
+				FieldOne: "one",
+				StructField: struct {
+					FieldTwo string `qs:"setter,field_two"`
+				}(struct {
+					FieldTwo string
+				}{FieldTwo: "two"}),
+			},
+		},
+		{
+			Name: "Should be skip setters fields",
+			Expected: core.ServiceValues{
+				"field_one": []string{"one"},
+			},
+			Settings: MarshalOptions{
+				OnlySettings: true,
+			},
+			Actual: struct {
+				FieldOne    string `qs:"setting,field_one"`
+				StructField struct {
+					FieldTwo string `qs:"setter,field_two"`
+				}
+			}{
+				FieldOne: "one",
+				StructField: struct {
+					FieldTwo string `qs:"setter,field_two"`
+				}(struct {
+					FieldTwo string
+				}{FieldTwo: "two"}),
+			},
+		},
+		{
+			Name: "Should be get required fields with setters",
+			Expected: core.ServiceValues{
+				"field_two": []string{"two"},
+				"pt":        []string{"1"},
+			},
+			Settings: MarshalOptions{
+				OnlySetters: true,
+			},
+			Actual: struct {
+				FieldOne    string `qs:"setting,field_one"`
+				Id          uint8  `qs:"required,pt"`
+				StructField struct {
+					FieldTwo string `qs:"setter,field_two"`
+				}
+			}{
+				FieldOne: "one",
+				Id:       1,
+				StructField: struct {
+					FieldTwo string `qs:"setter,field_two"`
+				}(struct {
+					FieldTwo string
+				}{FieldTwo: "two"}),
+			},
+		},
+	}
+
+	for _, tCase := range tCases {
+		t.Run(tCase.Name, func(t *testing.T) {
+			values := Marshal(tCase.Actual, tCase.Settings)
+
+			assert.EqualValues(t, tCase.Expected, values)
 		})
 	}
 
@@ -114,7 +205,7 @@ func TestMarshal(t *testing.T) {
 			Age:       24,
 		}
 
-		values := Marshal(tCase)
+		values := Marshal(tCase, MarshalOptions{})
 		expected := core.ServiceValues{
 			"name": []string{tCase.Name},
 			"nick": []string{tCase.Nickname},
@@ -122,6 +213,27 @@ func TestMarshal(t *testing.T) {
 		}
 
 		assert.EqualValues(t, expected, values)
+	})
+
+	t.Run("Should be return values from deep structs", func(t *testing.T) {
+		tCase := struct {
+			FieldOne    string `qs:"field_one"`
+			StructField struct {
+				FieldTwo string `qs:"field_two"`
+			}
+		}{
+			FieldOne: "one",
+			StructField: struct {
+				FieldTwo string `qs:"field_two"`
+			}(struct {
+				FieldTwo string
+			}{FieldTwo: "two"}),
+		}
+
+		values := Marshal(tCase, MarshalOptions{})
+
+		assert.Equal(t, "one", values.Get("field_one"))
+		assert.Equal(t, "two", values.Get("field_two"))
 	})
 }
 

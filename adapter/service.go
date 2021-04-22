@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"errors"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/echokepler/megad2561/core"
@@ -59,11 +60,13 @@ func (adapter *HTTPAdapter) Post(values core.ServiceValues) error {
 
 	uri := adapter.makeURL(url.Values(formattedValues))
 
-	fmt.Println(uri)
-
 	res, err := http.Get(uri)
 	if err != nil {
 		return err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return errors.New(res.Status)
 	}
 
 	err = res.Body.Close()

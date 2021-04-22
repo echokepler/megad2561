@@ -21,8 +21,6 @@ type Controller struct {
 	Ports    ports.Ports
 	configs.MainConfig
 	configs.MegadIDConfig
-
-	configs configs.Configs
 }
 
 // NewController создает инстанс контроллера.
@@ -36,24 +34,21 @@ func NewController(opts OptionsController) (*Controller, error) {
 		}
 	}
 
+	portHub := ports.NewPorts(service) // 0_-
+
 	controller := Controller{
 		host:     opts.Host,
 		password: opts.Password,
 		service:  service,
-		Ports: ports.Ports{
-			Service: service,
-			Records: map[int]ports.PortReader{},
-		},
+		Ports:    *portHub,
 	}
 
-	configList := configs.Configs{
+	configList := configs.NewConfigs([]configs.ConfigReader{
 		&controller.MainConfig,
 		&controller.MegadIDConfig,
-	}
+	}, service)
 
-	controller.configs = configList
-
-	err := configList.Read(controller.service)
+	err := configList.Read()
 	if err != nil {
 		return nil, err
 	}
@@ -64,9 +59,4 @@ func NewController(opts OptionsController) (*Controller, error) {
 	}
 
 	return &controller, nil
-}
-
-// ApplyConfigsChanges применяет изменения, отправляея измененные конфиги в сервис.
-func (c *Controller) ApplyConfigsChanges() error {
-	return c.configs.Write(c.service)
 }

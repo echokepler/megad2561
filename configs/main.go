@@ -44,11 +44,6 @@ type MainConfig struct {
 	attributes MainSettings
 }
 
-// NewMainConfig конструктор основного конфига
-func NewMainConfig(service core.ServiceAdapter) *MainConfig {
-	return &MainConfig{service: service}
-}
-
 // GetSettings возвращает текущее состояние конфига
 func (config *MainConfig) GetSettings() MainSettings {
 	return config.attributes
@@ -62,41 +57,6 @@ func (config *MainConfig) Update(cb func(settings MainSettings) MainSettings) er
 
 	config.attributes = updatedSettings
 	return config.write()
-}
-
-/**
-* Private
-**/
-
-func (config *MainConfig) read() error {
-	params := core.ServiceValues{}
-
-	params.Add("cf", MainConfigPath)
-
-	values, err := config.service.Get(params)
-	if err != nil {
-		return err
-	}
-
-	return qsparser.UnMarshal(values, &config.attributes)
-}
-
-// write Отправляет значения в контроллер
-//
-// Обрати внимание, что после каждого вызова write мы синхронизируем
-// конфиги, т.к внутри самого контролера может измениться логика валидации
-// и поле, которое мы хотели изменить может остаться прежним.
-func (config *MainConfig) write() error {
-	values := qsparser.Marshal(config.attributes)
-
-	values.Add("cf", MainConfigPath)
-
-	err := config.service.Post(values)
-	if err != nil {
-		return err
-	}
-
-	return config.read()
 }
 
 func (config *MainConfig) SetMQTTServer(ip string, password string) error {
@@ -123,4 +83,43 @@ func (config *MainConfig) DisableSrv() error {
 	config.attributes.Srv = "255.255.255.255"
 
 	return config.write()
+}
+
+/**
+* Private
+**/
+
+func (config *MainConfig) read() error {
+	params := core.ServiceValues{}
+
+	params.Add("cf", MainConfigPath)
+
+	values, err := config.service.Get(params)
+	if err != nil {
+		return err
+	}
+
+	return qsparser.UnMarshal(values, &config.attributes)
+}
+
+// write Отправляет значения в контроллер
+//
+// Обрати внимание, что после каждого вызова write мы синхронизируем
+// конфиги, т.к внутри самого контролера может измениться логика валидации
+// и поле, которое мы хотели изменить может остаться прежним.
+func (config *MainConfig) write() error {
+	values := qsparser.Marshal(config.attributes, qsparser.MarshalOptions{})
+
+	values.Add("cf", MainConfigPath)
+
+	err := config.service.Post(values)
+	if err != nil {
+		return err
+	}
+
+	return config.read()
+}
+
+func (config *MainConfig) setService(adapter core.ServiceAdapter) {
+	config.service = adapter
 }

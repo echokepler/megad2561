@@ -1,4 +1,4 @@
-package base
+package ports
 
 import (
 	"github.com/echokepler/megad2561/core"
@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestBaseOutputPort_Read(t *testing.T) {
+func TestBaseOutputPort_read(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -48,7 +48,7 @@ func TestBaseOutputPort_Read(t *testing.T) {
 		t.Run(tCase.name, func(t *testing.T) {
 			actualPort := OutputPort{}
 
-			err := actualPort.Read(tCase.values)
+			err := actualPort.read(tCase.values)
 			if err != nil {
 				t.Error(err)
 			}
@@ -58,7 +58,7 @@ func TestBaseOutputPort_Read(t *testing.T) {
 	}
 }
 
-func TestPortOutput_Write(t *testing.T) {
+func TestPortOutput_write(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -70,7 +70,7 @@ func TestPortOutput_Write(t *testing.T) {
 			name: "Should be return correct values",
 			actual: OutputPort{
 				Port: &Port{
-					ID: 0,
+					id: 0,
 				},
 				Group: "2",
 				Mode:  SW,
@@ -85,7 +85,7 @@ func TestPortOutput_Write(t *testing.T) {
 			name: "Should be return correct values with mode PWM",
 			actual: OutputPort{
 				Port: &Port{
-					ID: 0,
+					id: 0,
 				},
 				Mode: PWM,
 			},
@@ -99,7 +99,7 @@ func TestPortOutput_Write(t *testing.T) {
 			name: "Should be return correct values with mode SWL",
 			actual: OutputPort{
 				Port: &Port{
-					ID: 0,
+					id: 0,
 				},
 				Mode: SWL,
 			},
@@ -113,7 +113,7 @@ func TestPortOutput_Write(t *testing.T) {
 			name: "Should be return correct values with mode DS2413",
 			actual: OutputPort{
 				Port: &Port{
-					ID: 0,
+					id: 0,
 				},
 				Mode: DS2413,
 			},
@@ -129,7 +129,7 @@ func TestPortOutput_Write(t *testing.T) {
 		t.Run(tCase.name, func(t *testing.T) {
 			t.Parallel()
 
-			values, err := tCase.actual.Write()
+			values, err := tCase.actual.write()
 			if err != nil {
 				t.Error(err)
 

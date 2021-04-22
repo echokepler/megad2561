@@ -4,13 +4,19 @@ import (
 	"errors"
 	"fmt"
 	"github.com/echokepler/megad2561/core"
-	"github.com/echokepler/megad2561/ports/base"
 	"strconv"
 )
 
 type Ports struct {
-	Service core.ServiceAdapter
+	service core.ServiceAdapter
 	Records map[int]PortReader
+}
+
+func NewPorts(service core.ServiceAdapter) *Ports {
+	return &Ports{
+		service: service,
+		Records: map[int]PortReader{},
+	}
 }
 
 // Read считываем информацию со всех портов.
@@ -28,12 +34,12 @@ func (p *Ports) Read() error {
 		params := core.ServiceValues{}
 
 		params.Add("pt", strconv.FormatInt(int64(id), 10))
-		values, err := p.Service.Get(params)
+		values, err := p.service.Get(params)
 		if err != nil {
 			return err
 		}
 
-		port, err := NewPort(id, values)
+		port, err := NewPort(id, values, p.service)
 		if err != nil {
 			fmt.Println(err)
 			break
@@ -49,7 +55,7 @@ func (p *Ports) Read() error {
 	return nil
 }
 
-func (p *Ports) GetByID(id int, t base.PortType) (PortReader, error) {
+func (p *Ports) GetByID(id int, t PortType) (PortReader, error) {
 	port := p.Records[id]
 
 	if t != port.GetType() {
@@ -63,7 +69,7 @@ func (p *Ports) Set(reader PortReader) error {
 	p.Records[reader.GetID()] = reader
 
 	port := p.Records[reader.GetID()]
-	values, err := port.Write()
+	values, err := port.write()
 	if err != nil {
 		return err
 	}
@@ -71,5 +77,5 @@ func (p *Ports) Set(reader PortReader) error {
 	values.Add("pn", strconv.FormatInt(int64(port.GetID()), 10))
 	values.Add("pty", strconv.FormatInt(int64(port.GetType()), 10))
 
-	return p.Service.Post(values)
+	return p.service.Post(values)
 }

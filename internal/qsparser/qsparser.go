@@ -5,23 +5,88 @@ package qsparser
 import (
 	"github.com/echokepler/megad2561/core"
 	"reflect"
+	"regexp"
 	"strconv"
+	"strings"
 )
 
 const tagName = "qs"
 
-func Marshal(s interface{}) core.ServiceValues {
+var settingRe = regexp.MustCompile(`(?m)setting`)
+var setterRe = regexp.MustCompile(`(?m)setter`)
+var requiredRe = regexp.MustCompile(`(?m)required`)
+
+type MarshalOptions struct {
+	OnlySetters  bool
+	OnlySettings bool
+}
+
+func Marshal(s interface{}, opts MarshalOptions) core.ServiceValues {
 	values := core.ServiceValues{}
 	t := reflect.TypeOf(s)
 	v := reflect.ValueOf(s)
+
+	if t.Kind() == reflect.Ptr {
+		t = t.Elem()
+		v = reflect.Indirect(v)
+	}
 
 	for i := 0; i < t.NumField(); i++ {
 		value := ""
 		field := t.Field(i)
 		tag := field.Tag.Get(tagName)
+		tagArr := strings.Split(tag, ",")
+		tagValue := tagArr[len(tagArr)-1]
+		isSettingMode := true
+		isSetterMode := false
+		isRequiredMode := false
+
+		if tagValue == "skip" {
+			continue
+		}
+
+		if field.Type.Kind() == reflect.Ptr {
+			iField := reflect.Indirect(v.Field(i))
+
+			if iField.CanInterface() {
+				deepValues := Marshal(reflect.Indirect(v.Field(i)).Interface(), opts)
+
+				for key := range deepValues {
+					values.Add(key, deepValues.Get(key))
+				}
+			}
+
+			//fmt.Println(reflect.Indirect(v.Field(i)).Interface(), tagValue)
+
+			continue
+		}
+
+		if field.Type.Kind() == reflect.Struct {
+			deepValues := Marshal(v.Field(i).Interface(), opts)
+
+			for key := range deepValues {
+				values.Add(key, deepValues.Get(key))
+			}
+		}
 
 		if len(tag) == 0 {
 			continue
+		}
+
+		if len(tagArr) > 1 {
+			isSetterMode = setterRe.MatchString(tag)
+			isSettingMode = settingRe.MatchString(tag)
+			isRequiredMode = requiredRe.MatchString(tag)
+		}
+
+		if !isRequiredMode {
+			if opts.OnlySettings && !isSettingMode {
+				continue
+			}
+
+			if opts.OnlySetters && !isSetterMode {
+				continue
+			}
 		}
 
 		valField := reflect.ValueOf(v.Field(i).Interface())
@@ -29,6 +94,7 @@ func Marshal(s interface{}) core.ServiceValues {
 		switch field.Type.Kind() {
 		case reflect.String:
 			value = valField.String()
+
 		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 			value = strconv.FormatUint(valField.Uint(), 10)
 
@@ -38,7 +104,8 @@ func Marshal(s interface{}) core.ServiceValues {
 		case reflect.Bool:
 			value = strconv.FormatBool(valField.Bool())
 		}
-		values.Add(tag, value)
+
+		values.Add(tagValue, value)
 	}
 
 	return values

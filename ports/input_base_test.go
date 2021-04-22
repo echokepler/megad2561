@@ -1,12 +1,16 @@
-package base
+package ports
 
 import (
+	"github.com/echokepler/megad2561/adapter"
 	"github.com/echokepler/megad2561/core"
 	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"testing"
 )
 
-func TestPortInput_Read(t *testing.T) {
+func TestPortInput_read(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -21,10 +25,8 @@ func TestPortInput_Read(t *testing.T) {
 				"af": []string{"true"},
 			},
 			expected: InputPort{
-				settings: InputSettings{
-					Mode:           CLICK,
-					ForceSendToNet: true,
-				},
+				Mode:           CLICK,
+				ForceSendToNet: true,
 			},
 		},
 		{
@@ -33,9 +35,7 @@ func TestPortInput_Read(t *testing.T) {
 				"mt": []string{"true"},
 			},
 			expected: InputPort{
-				settings: InputSettings{
-					IsMute: true,
-				},
+				IsMute: true,
 			},
 		},
 		{
@@ -44,9 +44,7 @@ func TestPortInput_Read(t *testing.T) {
 				"d": []string{"true"},
 			},
 			expected: InputPort{
-				settings: InputSettings{
-					IsRaw: true,
-				},
+				IsRaw: true,
 			},
 		},
 		{
@@ -55,9 +53,7 @@ func TestPortInput_Read(t *testing.T) {
 				"ecmd": []string{"21:2;g0:0"},
 			},
 			expected: InputPort{
-				settings: InputSettings{
-					Commands: "21:2;g0:0",
-				},
+				Commands: "21:2;g0:0",
 			},
 		},
 		{
@@ -66,9 +62,7 @@ func TestPortInput_Read(t *testing.T) {
 				"eth": []string{"0.0.0.0/megad.php"},
 			},
 			expected: InputPort{
-				settings: InputSettings{
-					NetCommandAddress: "0.0.0.0/megad.php",
-				},
+				NetCommandAddress: "0.0.0.0/megad.php",
 			},
 		},
 	}
@@ -87,7 +81,7 @@ func TestPortInput_Read(t *testing.T) {
 	}
 }
 
-func TestPortInput_Write(t *testing.T) {
+func TestPortInput_write(t *testing.T) {
 	t.Parallel()
 
 	testCases := []struct {
@@ -101,12 +95,10 @@ func TestPortInput_Write(t *testing.T) {
 				Port: &Port{
 					id: 0,
 				},
-				settings: InputSettings{
-					Commands: "22:2",
-					IsRaw:    true,
-					IsMute:   true,
-					Mode:     PR,
-				},
+				Commands: "22:2",
+				IsRaw:    true,
+				IsMute:   true,
+				Mode:     PR,
 			},
 			expected: core.ServiceValues{
 				"ecmd": []string{"22:2"},
@@ -124,9 +116,7 @@ func TestPortInput_Write(t *testing.T) {
 				Port: &Port{
 					id: 0,
 				},
-				settings: InputSettings{
-					Mode: P,
-				},
+				Mode: P,
 			},
 			expected: core.ServiceValues{
 				"ecmd": []string{""},
@@ -144,9 +134,7 @@ func TestPortInput_Write(t *testing.T) {
 				Port: &Port{
 					id: 0,
 				},
-				settings: InputSettings{
-					Mode: R,
-				},
+				Mode: R,
 			},
 			expected: core.ServiceValues{
 				"ecmd": []string{""},
@@ -174,4 +162,51 @@ func TestPortInput_Write(t *testing.T) {
 			assert.EqualValues(t, tCase.expected, values)
 		})
 	}
+}
+
+func TestInputPort_ChangeSettings(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Should update settings in remote service", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			params, err := url.ParseQuery(r.URL.RawQuery)
+			if err != nil {
+				t.Error(err)
+			}
+
+			assert.Equal(t, "1", params.Get("d"))
+		}))
+		service := adapter.HTTPAdapter{Host: server.URL}
+		port := NewInputPort(0, &service)
+
+		err := port.ChangeSettings(func(p InputPort) InputPort {
+			p.IsRaw = true
+
+			return p
+		})
+
+		assert.True(t, port.IsRaw)
+
+		if err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("Must not update properties if a negative response is received from the service", func(t *testing.T) {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(500)
+		}))
+		service := adapter.HTTPAdapter{Host: server.URL}
+		port := NewInputPort(0, &service)
+
+		err := port.ChangeSettings(func(p InputPort) InputPort {
+			p.IsRaw = true
+
+			return p
+		})
+
+		assert.Error(t, err)
+		assert.False(t, port.IsRaw)
+
+	})
 }

@@ -1,9 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/echokepler/megad2561/client"
-	"github.com/echokepler/megad2561/configs"
+	"github.com/echokepler/megad2561/ports"
 )
+
+const IdPortPWM = 13
 
 func main() {
 	options := client.OptionsController{
@@ -15,13 +18,12 @@ func main() {
 		panic(err)
 	}
 
-	err = controller.MegadIDConfig.ChangeSettings(func(settings configs.MegaIDSettings) configs.MegaIDSettings {
-		settings.MegadID = "megs"
-
-		return settings
-	})
-
+	fmt.Println(controller.Ports)
+	port, err := controller.Ports.GetByID(IdPortPWM, ports.OutputType)
 	if err != nil {
 		panic(err)
 	}
+
+	portPWM := port.(*ports.PortPWM)
+	_ = portPWM.Set(0)
 }
