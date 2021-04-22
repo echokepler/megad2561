@@ -29,7 +29,7 @@ func TestHTTPAdapter_Get(t *testing.T) {
 		}))
 
 		httpAdapter := HTTPAdapter{
-			Host: &server.URL,
+			Host: server.URL,
 		}
 
 		values, _ := httpAdapter.Get(core.ServiceValues{})
