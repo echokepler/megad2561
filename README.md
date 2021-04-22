@@ -8,7 +8,7 @@
 - [x] Input
 - [x] Output
   - [x] Base
-  - [ ] PWM
+  - [x] PWM
 - [ ] АЦП
 - [ ] Dsen
 
