@@ -35,6 +35,11 @@ func (p *Ports) Read() error {
 
 		params.Add("pt", strconv.FormatInt(int64(id), 10))
 		values, err := p.service.Get(params)
+
+		if values != nil && values.IsEmpty() {
+			continue
+		}
+
 		if err != nil {
 			return err
 		}

@@ -8,7 +8,6 @@ const (
 )
 
 type PortReader interface {
-	ConfigReader
 	GetID() uint
 	GetPortType() PortType
 }

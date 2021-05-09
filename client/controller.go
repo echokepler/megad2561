@@ -15,10 +15,11 @@ type OptionsController struct {
 }
 
 type Controller struct {
-	host     string
-	password string
-	service  core.ServiceAdapter
-	Ports    ports.Ports
+	host       string
+	password   string
+	service    core.ServiceAdapter
+	Ports      ports.Ports
+	MqttClient core.MqttService
 	configs.MainConfig
 	configs.MegadIDConfig
 }
@@ -30,8 +31,10 @@ func NewController(opts OptionsController) (*Controller, error) {
 
 	if opts.ServiceAdapter == nil {
 		service = &adapter.HTTPAdapter{
-			Host: fmt.Sprintf("http://%v/%v", opts.Host, opts.Password),
+			Host: fmt.Sprintf("%v/%v", opts.Host, opts.Password),
 		}
+	} else {
+		service = opts.ServiceAdapter
 	}
 
 	portHub := ports.NewPorts(service) // 0_-
@@ -52,10 +55,39 @@ func NewController(opts OptionsController) (*Controller, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	err = controller.Ports.Read()
 	if err != nil {
 		return nil, err
+	}
+
+	if controller.MainConfig.IsMQTTEnabled() {
+		MQTTCreds := controller.MainConfig.GetMQTTCredentials()
+		megadID := controller.MegadIDConfig.GetMegadID()
+
+		MQTTOpts := adapter.MQTTClientOptions{
+			Address:  MQTTCreds.Host,
+			ClientID: &megadID,
+			Password: MQTTCreds.Password,
+		}
+
+		MQTTClient, err := adapter.NewMqttClient(MQTTOpts)
+		if err != nil {
+			return nil, err
+		}
+
+		controller.MqttClient = MQTTClient
+
+		for id, port := range controller.Ports.Records {
+			if port.GetType() == ports.InputType {
+				err := controller.MqttClient.SubscribePortIn(uint8(id), func(msg core.MegadPortInMessage) {
+					fmt.Println(msg)
+				})
+
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
 	}
 
 	return &controller, nil

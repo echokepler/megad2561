@@ -6,6 +6,13 @@ import (
 )
 
 type ModeType uint8
+type ClickType int
+
+const (
+	SingleClick ClickType = iota
+	DoubleClick
+	LongPress
+)
 
 const (
 	// P - устройство реагирует (то есть отправляет сообщения на сервер, выполняет сценарии и т.д.)

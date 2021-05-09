@@ -44,6 +44,11 @@ type MainConfig struct {
 	attributes MainSettings
 }
 
+type MqttCredentials struct {
+	Password string
+	Host     string
+}
+
 // GetSettings возвращает текущее состояние конфига
 func (config *MainConfig) GetSettings() MainSettings {
 	return config.attributes
@@ -83,6 +88,17 @@ func (config *MainConfig) DisableSrv() error {
 	config.attributes.Srv = "255.255.255.255"
 
 	return config.write()
+}
+
+func (config *MainConfig) GetMQTTCredentials() MqttCredentials {
+	return MqttCredentials{
+		Host:     config.attributes.Srv,
+		Password: config.attributes.MqttPassword,
+	}
+}
+
+func (config *MainConfig) IsMQTTEnabled() bool {
+	return config.attributes.SrvType == MQTT
 }
 
 /**

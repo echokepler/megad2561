@@ -2,11 +2,26 @@ package core
 
 import "net/url"
 
+type TypeServiceError int
+
+const (
+	UnAuthorized TypeServiceError = iota
+)
+
 // ServiceAdapter общий интерфейс сервис адаптера,
 // далее по нему могут быть реализованы нативный и кастомные адаптеры
 type ServiceAdapter interface {
 	Get(params ServiceValues) (ServiceValues, error)
 	Post(values ServiceValues) error
+}
+
+type ErrorService struct {
+	Type TypeServiceError
+	Err  error
+}
+
+func (ce *ErrorService) Error() string {
+	return ce.Err.Error()
 }
 
 // По сути ServiceValues нужен в качестве подстраховки на случай смены структуры этих типов.
@@ -45,6 +60,10 @@ func (sv ServiceValues) Del(key string) {
 
 func (sv ServiceValues) Encode() string {
 	return url.Values(sv).Encode()
+}
+
+func (sv ServiceValues) IsEmpty() bool {
+	return len(sv) == 0
 }
 
 func (sv ServiceValues) IsBool(key string) bool {

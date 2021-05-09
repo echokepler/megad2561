@@ -26,6 +26,10 @@ func (config *MegadIDConfig) ChangeSettings(cb func(config MegaIDSettings) MegaI
 	return config.write()
 }
 
+func (config *MegadIDConfig) GetMegadID() string {
+	return config.attributes.MegadID
+}
+
 func (config *MegadIDConfig) read() error {
 	params := core.ServiceValues{}
 

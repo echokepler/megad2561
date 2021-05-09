@@ -27,6 +27,13 @@ func (adapter *HTTPAdapter) Get(params core.ServiceValues) (core.ServiceValues, 
 		return nil, err
 	}
 
+	if res.StatusCode == http.StatusUnauthorized || res.StatusCode == http.StatusForbidden {
+		return nil, &core.ErrorService{
+			Type: core.UnAuthorized,
+			Err:  errors.New("unauthorized"),
+		}
+	}
+
 	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		return nil, err
