@@ -16,14 +16,15 @@ func main() {
 		Password: "sec",
 	}
 
-	_, err := client.NewController(options)
+	controller, err := client.NewController(options)
 	if err != nil {
 		panic(err)
 	}
 
-	//err = controller.MainConfig.SetMQTTServer("192.168.88.242:1883", ""); if err != nil {
-	//	panic(err)
-	//}
+	err = controller.MainConfig.SetMQTTServer("192.168.88.242:1883", "")
+	if err != nil {
+		panic(err)
+	}
 
 	<-c
 }

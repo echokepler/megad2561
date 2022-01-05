@@ -15,13 +15,13 @@ type OptionsController struct {
 }
 
 type Controller struct {
-	host       string
-	password   string
-	service    core.ServiceAdapter
-	Ports      ports.Ports
-	MqttClient core.MqttService
-	configs.MainConfig
-	configs.MegadIDConfig
+	host          string
+	password      string
+	service       core.ServiceAdapter
+	Ports         ports.Ports
+	MqttClient    core.MqttService
+	MainConfig    configs.MainConfig
+	MegadIDConfig configs.MegadIDConfig
 }
 
 // NewController создает инстанс контроллера.
@@ -61,13 +61,13 @@ func NewController(opts OptionsController) (*Controller, error) {
 	}
 
 	if controller.MainConfig.IsMQTTEnabled() {
-		MQTTCreds := controller.MainConfig.GetMQTTCredentials()
+		MQTTCredentials := controller.MainConfig.GetMQTTCredentials()
 		megadID := controller.MegadIDConfig.GetMegadID()
 
 		MQTTOpts := adapter.MQTTClientOptions{
-			Address:  MQTTCreds.Host,
+			Address:  MQTTCredentials.Host,
 			ClientID: &megadID,
-			Password: MQTTCreds.Password,
+			Password: MQTTCredentials.Password,
 		}
 
 		MQTTClient, err := adapter.NewMqttClient(MQTTOpts)
@@ -91,4 +91,15 @@ func NewController(opts OptionsController) (*Controller, error) {
 	}
 
 	return &controller, nil
+}
+
+func (c *Controller) ChangeService(adapter core.ServiceAdapter) {
+	c.service = adapter
+
+	configs.NewConfigs([]configs.ConfigReader{
+		&c.MainConfig,
+		&c.MegadIDConfig,
+	}, adapter)
+
+	c.Ports.ChangeService(adapter)
 }

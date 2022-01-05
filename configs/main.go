@@ -101,6 +101,10 @@ func (config *MainConfig) IsMQTTEnabled() bool {
 	return config.attributes.SrvType == MQTT
 }
 
+func (config *MainConfig) UpdateService(service core.ServiceAdapter) {
+	config.service = service
+}
+
 /**
 * Private
 **/

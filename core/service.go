@@ -62,6 +62,15 @@ func (sv ServiceValues) Encode() string {
 	return url.Values(sv).Encode()
 }
 
+func (sv ServiceValues) Parse(str string) (ServiceValues, error) {
+	values, err := url.ParseQuery(str)
+	if err != nil {
+		return nil, err
+	}
+
+	return ServiceValues(values), nil
+}
+
 func (sv ServiceValues) IsEmpty() bool {
 	return len(sv) == 0
 }

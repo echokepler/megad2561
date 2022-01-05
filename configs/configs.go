@@ -43,3 +43,9 @@ func (cs Configs) Write() error {
 
 	return nil
 }
+
+func (cs Configs) UpdateService(adapter core.ServiceAdapter) {
+	for _, config := range cs {
+		config.setService(adapter)
+	}
+}

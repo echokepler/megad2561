@@ -102,7 +102,11 @@ func Marshal(s interface{}, opts MarshalOptions) core.ServiceValues {
 			value = strconv.FormatInt(valField.Int(), 10)
 
 		case reflect.Bool:
-			value = strconv.FormatBool(valField.Bool())
+			if valField.Bool() {
+				value = "1"
+			} else {
+				value = "0"
+			}
 		}
 
 		values.Add(tagValue, value)

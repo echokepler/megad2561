@@ -84,3 +84,7 @@ func (p *Ports) Set(reader PortReader) error {
 
 	return p.service.Post(values)
 }
+
+func (p *Ports) ChangeService(adapter core.ServiceAdapter) {
+	p.service = adapter
+}
